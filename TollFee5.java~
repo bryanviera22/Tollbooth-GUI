@@ -1,0 +1,191 @@
+
+import javax.swing.JFrame;
+import java.awt.BorderLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
+import javax.swing.JButton;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JOptionPane; //POP-UP Box output
+import java.io.File; //creates an object that can create and open an actual file to store data
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Scanner; //creates an object to read content to the file
+//we use the scanner to read the content entered by the user via the input device(keyboard)
+import java.io.FileNotFoundException;
+
+public class TollFee5 extends JFrame implements ActionListener { //Class
+  
+  private JLabel vehicleTypeLabel, carLabel, truckLabel, bikeLabel, feeLabel;
+  private JPanel centerPanel, centerPanel2, mainCenterPanel, southPanel;
+  private JRadioButton carButton, truckButton, bikeButton;
+  private ButtonGroup vehicleGroup;
+  private ImageIcon carImageIcon, truckImageIcon, bikeImageIcon;
+  private JComboBox feeBox;
+  private JButton payButton, printButton, clearButton;
+  
+  public TollFee5 () {  //Constructor
+  
+    super("Toll Fee Cashier System");
+    
+    vehicleTypeLabel = new JLabel("Type of Vehicle:");
+    carButton = new JRadioButton("");
+    carImageIcon = new ImageIcon("car.gif");
+    carLabel = new JLabel(carImageIcon);
+       truckButton = new JRadioButton("");
+       truckImageIcon = new ImageIcon("truck.gif");
+       truckLabel = new JLabel(truckImageIcon);
+            bikeButton = new JRadioButton("");
+            bikeImageIcon = new ImageIcon("motorcycle.gif");
+            bikeLabel = new JLabel(bikeImageIcon);
+    vehicleGroup = new ButtonGroup(); //group
+    vehicleGroup.add(carButton);
+    vehicleGroup.add(truckButton);
+    vehicleGroup.add(bikeButton);
+    //centerPanel
+    centerPanel = new JPanel();
+    centerPanel.add(vehicleTypeLabel);
+    centerPanel.add(carButton);
+    centerPanel.add(carLabel);
+    centerPanel.add(truckButton);
+    centerPanel.add(truckLabel);
+    centerPanel.add(bikeButton);
+    centerPanel.add(bikeLabel);
+    mainCenterPanel = new JPanel();
+    mainCenterPanel.setLayout(new BorderLayout());
+    mainCenterPanel.add(centerPanel, BorderLayout.NORTH);
+    //centerPanel2
+    centerPanel2 = new JPanel();
+    feeLabel = new JLabel("Type of Fee:");
+    String feeList [] = {"Regular Tolls", "Peek Weekends"};
+    feeBox = new JComboBox(feeList);
+    centerPanel2.add(feeLabel);
+    centerPanel2.add(feeBox);
+    mainCenterPanel.add(centerPanel2, BorderLayout.CENTER);
+    add(mainCenterPanel, BorderLayout.CENTER);
+   
+    //SouthPanel
+    southPanel = new JPanel();
+    payButton = new JButton("Pay Fee");
+    payButton.addActionListener(this); //add action to pay button
+    printButton = new JButton("Print Receipt");
+    printButton.addActionListener(this); //add action to print button
+    clearButton = new JButton("Clear");
+    clearButton.addActionListener(this); //add action to clear button
+    southPanel.add(payButton);
+    southPanel.add(printButton);
+    southPanel.add(clearButton);
+    add(southPanel, BorderLayout.SOUTH);
+    
+    
+    setVisible(true);
+    setSize(500, 170);
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);    
+  } //end of constructor
+  
+  public void actionPerformed(ActionEvent event) { //Detects what is being clicked
+    
+    if(event.getSource() == payButton) { //Pay Button
+      
+    File tollFile = new File("receipt.txt"); //Declare and initialize a file object
+    
+    try {
+      FileWriter writer = new FileWriter(tollFile);
+      
+       try { //TRY BLOCK BEGINS
+        if (vehicleGroup.isSelected(null)) {
+          throw new VehicleException();
+        }
+        
+        //this will be printer if no error occurs
+      String typeOfVehicle = "";
+      int vehicleFee = 0;
+      if(carButton.isSelected()) {
+        typeOfVehicle = "2 Axels";
+        vehicleFee = 3;
+        //writer.write(typeOfVehicle); NOT NEEDED INSIDE IF STATEMENT/ still would work
+        //writer.write("\n" +vehicleFee);
+      }
+      else if(truckButton.isSelected()) {
+        typeOfVehicle = "3 or More Axels";
+        vehicleFee = 4;
+        //writer.write(typeOfVehicle);
+        //writer.write("\n" +vehicleFee);
+      }
+      else if(bikeButton.isSelected()) {
+        typeOfVehicle = "Motorcycle";
+        vehicleFee = 1;
+        //writer.write(typeOfVehicle);
+        //writer.write("\n" +vehicleFee);
+      }
+      
+      
+      //This prints data inside the text file receipt
+      writer.write("Toll Receipt:");
+      writer.write("\nVehicle Type: " + typeOfVehicle);
+      String feeForVehicle = feeBox.getSelectedItem().toString(); //Retrieve from JComboBox
+      writer.write("\nFee Type: " + feeForVehicle);
+      
+      int peekWeekendFee = 3; //extra fee for peek weekend hours
+      if(feeForVehicle.equals("Peek Weekends")) {
+        vehicleFee += peekWeekendFee;
+      }
+      
+      writer.write("\nFee: $" +vehicleFee);
+      
+      //This prints the data inside pop-up box
+      String output = "Toll Receipt:" +
+                               "\nVehicle Type: " + typeOfVehicle +
+                               "\nFee Type: " + feeForVehicle +
+                               "\nFee: $" + vehicleFee;
+      
+      JOptionPane.showMessageDialog(null, output);
+      
+      }//END OF INNER TRY BLOCK// FOR DATA INSIDE GUI
+      
+      catch(VehicleException e){ //CATCH BLOCK BEGINS
+        JOptionPane.showMessageDialog(null, e.getMessage());        
+      } //end of  INNER catch block// TO CATCH MESSAGE EXCEPTION e
+      
+      writer.close(); //close the receipt.txt file
+      
+    }//END OF OUTTER TRY BLOCK// TRY BLOCK FOR WRITER
+    
+    catch(IOException ieo) { //the IOException can have any name. In this case itsn name is 'e'
+        System.out.println(ieo.getMessage());
+            }//END OF OUTTER CATCH BLOCK// TO CATCH IEO EXCEPTION
+          
+    }//END OF IF STATEMENT for payButton
+    
+    else if(event.getSource() == printButton) {//printButton
+      
+      File tollFile = new File("receipt.txt");
+      try {
+      Scanner reader = new Scanner(tollFile); //package creates an object to read content to the file
+      while(reader.hasNextLine()){ //continue the reading process until the process reaches the end of the text file
+        String line = reader.nextLine(); //reading a line of data in the text file
+        System.out.println(line); //display the data
+      }//end of while loop
+      reader.close(); //close the tollFile.txt file
+      }
+      catch(FileNotFoundException fnfe) { //catch block for fnfe exception
+        System.out.println(fnfe.getMessage());
+      }//end of fnfe catch block
+    }//end of IF STATEMENT FOR printButton
+    
+    //Clear Button
+    else if(event.getSource() == clearButton) { 
+      vehicleGroup.clearSelection(); //reset vehicle group button
+      feeBox.setSelectedIndex(0); //reset fee box 
+    } //end of if else statement for clear button
+    
+  }//END OF EVENT
+   
+  public static void main(String [] args) { //main method
+    TollFee5 app = new TollFee5(); //executes GUI
+      }
+}//end of class
